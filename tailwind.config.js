@@ -12,7 +12,8 @@ export default {
         },
         _error: {
           100: "#fdd8d8",
-          500: "#cd2b31"
+          500: "#cd2b31",
+          600: "#b8252a"
         },
         _secondary: "#aaaaaa",
       },

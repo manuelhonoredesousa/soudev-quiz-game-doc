@@ -1,9 +1,16 @@
-import "./index.css";
-
 interface Entries {
   text: string;
+  onClickLink?: () => void;
 }
 
-export function Link({ text }: Entries) {
-  return <a href="#" className="link text-_primary-100 hover:text-_primary-500"> {text} </a>
+export function Link({ text, onClickLink = () => {} }: Entries) {
+  return (
+    <a
+      href="#"
+      className="link font-medium text-_primary-100 hover:text-_primary-500"
+      onClick={() => onClickLink()}
+    >
+      {text}
+    </a>
+  );
 }

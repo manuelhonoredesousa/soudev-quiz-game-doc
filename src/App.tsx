@@ -1,86 +1,187 @@
+import "./App.css";
 import { Button } from "./Components/Button";
 import { Link } from "./Components/Link";
-import { TextSpace } from "./Components/TextSpace";
-import sun_img from "./../public/sun-iso-color.png";
-
-import "./App.css";
+import { Input } from "./Components/Form/Input";
 import { Heading } from "./Components/Heading";
+import { Modal } from "./Components/Modal";
+import { useEffect, useState } from "react";
+import { Label } from "./Components/Form/Label";
+import { Field } from "./Components/Form/Field";
+import { Textarea } from "./Components/Form/Textarea";
+import { Span } from "./Components/Span";
+import { FormProvider, useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import sun_img from "./Image/sun-iso-color.png";
+import { TXT } from "./Components/TXT";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import rooling from "./Assets/rolling_200px.svg";
+
+const ALERTPOPUP_PROPERTIES = {
+  autoClose: 5000,
+  hideProgressBar: false,
+  closeOnClick: true,
+  pauseOnHover: true,
+  pauseOnFocusLoss: false,
+  draggable: true,
+};
+const createMessageSchema = z.object({
+  fullname: z
+    .string()
+    .nonempty("Name is required")
+    .transform((name) => {
+      return name
+        .trim()
+        .split(" ")
+        .map((word) => word[0].toLocaleUpperCase().concat(word.substring(1)))
+        .join(" ");
+    }),
+  email: z
+    .string()
+    .nonempty("Email is required")
+    .email("Invalid format, eg: quizgame@example.com"),
+  message: z
+    .string()
+    .nonempty("Message is required")
+    .min(5, "Must be at least 5 characters"),
+});
+
+type CreateMessageDataType = z.infer<typeof createMessageSchema>;
+
+type EmailResponseType = "success" | "error";
 
 function App() {
-  // const [apiInformation, setApiInformation] = useState({url: "https://api.soudev.com"});
+  const [dialogState, setDialogState] = useState(false);
+  const createSendMailForm = useForm<CreateMessageDataType>({ resolver: zodResolver(createMessageSchema)});
+
+  const { VITE_API_URL } = import.meta.env;
+
+  function openDialog() {
+    setDialogState(true);
+  }
+  function closeDialog() {
+    setDialogState(false);
+  }
+
+  function openDoc() {}
+
+  function showAlertPopUpWaiting() {
+    toast("Sending email...", {
+      autoClose: false,
+      hideProgressBar: true,
+      closeOnClick: false,
+      pauseOnHover: false,
+      pauseOnFocusLoss: false,
+      draggable: false,
+      closeButton: false,
+      icon: () => <img src={rooling} />,
+    });
+  }
+  function showAlertPopUp(type: EmailResponseType) {
+    toast.dismiss();
+    if (type == "success") {
+      toast.success("The email has been sent", ALERTPOPUP_PROPERTIES);
+    } else if (type == "error") {
+      toast.error("Email was not sent successfully", ALERTPOPUP_PROPERTIES);
+    }
+  }
+  async function sendMail(data: CreateMessageDataType) {
+    const { fullname, email, message } = data;
+    const API = VITE_API_URL;
+
+    closeDialog();
+    showAlertPopUpWaiting();
+
+    const response = await fetch(API, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        first_name: fullname,
+        last_name: "",
+        email: email,
+        messagem: message,
+        subject: "SOUDEV - Quiz Game",
+      }),
+    }).then((data) => data.json()).catch((e) =>  'error')
+
+    if (response.response == "ok") showAlertPopUp("success");
+    if (response.response == undefined) showAlertPopUp("error");
+  }
+
+  const {
+    handleSubmit,
+    formState: { errors },
+  } = createSendMailForm;
+
   return (
     <>
       <div className="flex items-center">
         <div>
           <Heading text="SouDEV - Quiz Game" />
-          <TextSpace
-            text="Bem-vindo à documentação da API do nosso jogo de Quiz! Aqui você
-            encontrará todas as informações necessárias para começar a criar
-            aplicativos incríveis usando nossa API."
-          />
 
-          <TextSpace
-            text="Nossa API de Quiz Game é uma plataforma poderosa e flexível que permite
-        criar e gerenciar jogos de perguntas e respostas em diferentes línguas e
-        com imagens, tornando a experiência do usuário mais rica e envolvente.
-        Com suporte a mais de sete idiomas, você pode oferecer uma experiência
-        multilíngue para seus usuários e alcançar uma audiência global."
-          />
+          <TXT />
+          <Modal
+            dialogState={dialogState}
+            setDialogStateFalse={closeDialog}
+            title="Anything to tell me?"
+          >
+            <FormProvider {...createSendMailForm}>
+              <form onSubmit={handleSubmit(sendMail)}>
+                <Field>
+                  <Label text="Full Name:" labelFor="fullname" />
+                  <Input type="text" placeholder="Your Name" name="fullname" />
+                  {errors.fullname && <Span text={errors.fullname.message} />}
+                </Field>
 
-          <TextSpace
-            text="Com a nossa API, você pode criar diferentes tipos de jogos, incluindo
-        jogos de imagens. Você pode usar nossa extensa biblioteca de imagens ou
-        adicionar suas próprias imagens personalizadas. Além disso, nossa API
-        permite que você personalize os jogos de acordo com suas necessidades,
-        incluindo o número de perguntas, a dificuldade, o tempo de resposta,
-        entre outros."
-          />
+                <Field>
+                  <Label text="E-mail:" labelFor="email" />
+                  <Input type="email" placeholder="Your E-mail" name="email" />
+                  {errors.email && <Span text={errors.email.message} />}
+                </Field>
 
-          <TextSpace
-            text="Para começar a usar nossa API, basta criar uma conta e obter suas
-        credenciais de API. Em seguida, você pode fazer solicitações à API para
-        criar jogos, adicionar perguntas e imagens, e gerenciar usuários e
-        pontuações."
-          />
+                <Field>
+                  <Label text="Message:" labelFor="message" />
+                  <Textarea
+                    placeholder="Your Suggestion, Criticism or Contribution"
+                    name="message"
+                  />
+                  {errors.message && <Span text={errors.message.message} />}
+                </Field>
 
-          <TextSpace
-            text="Nossa documentação é completa e fácil de seguir, com exemplos de código
-        e uma lista de todos os endpoints disponíveis. Se você tiver dúvidas ou
-        precisar de suporte, nossa equipe de suporte estará sempre disponível
-        para ajudar."
-          />
-
-          <TextSpace
-            text="Então, comece agora a usar nossa API de Quiz Game e crie jogos incríveis
-        que seus usuários vão adorar!"
-          />
-
-          <div className="flex flex-col gap-1 mt-4">
-            <label className="text-_primary-100 font-bold" htmlFor="name">Name:</label>
-            <input className="bg-transparent border border-_primary-100 rounded p-2" placeholder="Your Name" type="text" name="name" required/>
-          </div>
-          <div className="flex flex-col gap-1 mt-4">
-            <label className="text-_primary-100 font-bold" htmlFor="email">E-mail:</label>
-            <input className="bg-transparent border border-_primary-100 rounded p-2" placeholder="Your E-mail" type="email" name="email" />
-          </div>
-          <div className="flex flex-col gap-1 mt-4">
-            <label className="text-_primary-100 font-bold" htmlFor="message">Message:</label>
-            <textarea className="bg-transparent border border-_primary-100 rounded p-2" placeholder="Your Suggestion, Criticism or Contribution" name="message" required></textarea>
-          </div>
-          <div className="flex flex-row justify-end gap-1 mt-4">
-            <Button text="SEND MESSAGE" type="primary"/>
-            <Button text="CLOSE" type="error"/>
-          </div>
+                <div className="flex flex-row justify-end gap-1 mt-4">
+                  <Button
+                    text="Send Message"
+                    textColor="gray-200"
+                    buttonType="primary"
+                    type="submit"
+                  />
+                  <Button
+                    text="Close"
+                    textColor="gray-200"
+                    buttonType="error"
+                    type="reset"
+                    onClickButton={closeDialog}
+                  />
+                </div>
+              </form>
+            </FormProvider>
+          </Modal>
 
           <div className="flex items-center gap-2">
-            <Button text="Get Started" type="primary" />
-            <Link text="Feedback" />
+            <Button
+              text="Get Started"
+              buttonType="primary"
+              onClickButton={openDoc}
+            />
+            <Link text="Feedback" onClickLink={openDialog} />
           </div>
         </div>
         <div className="flex items-center">
-          <img src={sun_img} alt="" />
+          <img src={sun_img} alt="Image of 3D Sun" />
         </div>
       </div>
+      <ToastContainer />
     </>
   );
 }

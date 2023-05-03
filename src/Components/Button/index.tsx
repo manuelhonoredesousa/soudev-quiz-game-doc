@@ -1,15 +1,29 @@
 import "./index.css";
 
 interface Entries {
-  type: "primary" | "secondary" | "error";
+  buttonType: "primary" | "secondary" | "error";
+  type?: 'button' | 'reset' | 'submit';
+  textColor?: "black" | "gray-200" | "white";
   text: string;
+  onClickButton?: () => void;
 }
 
-export function Button({ text, type }: Entries) {
+export function Button({ text, buttonType, type, textColor, onClickButton = () => {}}: Entries) {
+  let btnColorStyle;
+
+  if (buttonType === "primary") btnColorStyle = "bg-_primary-100 hover:bg-_primary-500";
+
+  if (buttonType === "error") btnColorStyle = "bg-_error-500 hover:bg-_error-600";
+
+  textColor = textColor ? textColor : "white";
 
   return (
-    
-    <button className="button font-bold bg-_primary-100 hover:bg-_primary-500"  >{text}</button>
+    <button
+      className={btnColorStyle + ` button text-${textColor} rounded-md font-bold`}
+      type={type}
+      onClick={()=> onClickButton()}
+    >
+      {text}
+    </button>
   );
 }
-
