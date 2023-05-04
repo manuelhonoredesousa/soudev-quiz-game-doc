@@ -1,22 +1,26 @@
-import "./App.css";
-import { Button } from "./Components/Button";
-import { Link } from "./Components/Link";
-import { Input } from "./Components/Form/Input";
-import { Heading } from "./Components/Heading";
-import { Modal } from "./Components/Modal";
-import { useEffect, useState } from "react";
-import { Label } from "./Components/Form/Label";
-import { Field } from "./Components/Form/Field";
-import { Textarea } from "./Components/Form/Textarea";
-import { Span } from "./Components/Span";
+import "./Home.css";
+import "react-toastify/dist/ReactToastify.css";
+
+import { useState } from "react";
 import { FormProvider, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import sun_img from "./Image/sun-iso-color.png";
-import { TXT } from "./Components/TXT";
 import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-import rooling from "./Assets/rolling_200px.svg";
+import { useNavigate } from "react-router-dom";
+import { z } from "zod";
+
+import { Button } from "./../Components/Button";
+import { Link } from "./../Components/Link";
+import { Input } from "./../Components/Form/Input";
+import { Heading } from "./../Components/Heading";
+import { Modal } from "./../Components/Modal";
+import { Label } from "./../Components/Form/Label";
+import { Field } from "./../Components/Form/Field";
+import { Textarea } from "./../Components/Form/Textarea";
+import { Span } from "./../Components/Span";
+
+import rooling from "./../Assets/rolling_200px.svg";
+import sun_img from "./../Assets/sun-iso-color.png";
+import { TextSpace } from "./../Components/TextSpace";
 
 const ALERTPOPUP_PROPERTIES = {
   autoClose: 5000,
@@ -26,6 +30,7 @@ const ALERTPOPUP_PROPERTIES = {
   pauseOnFocusLoss: false,
   draggable: true,
 };
+
 const createMessageSchema = z.object({
   fullname: z
     .string()
@@ -51,9 +56,10 @@ type CreateMessageDataType = z.infer<typeof createMessageSchema>;
 
 type EmailResponseType = "success" | "error";
 
-function App() {
+function Home() {
   const [dialogState, setDialogState] = useState(false);
-  const createSendMailForm = useForm<CreateMessageDataType>({ resolver: zodResolver(createMessageSchema)});
+  const createSendMailForm = useForm<CreateMessageDataType>({ resolver: zodResolver(createMessageSchema) });
+  const navigate = useNavigate();
 
   const { VITE_API_URL } = import.meta.env;
 
@@ -64,7 +70,9 @@ function App() {
     setDialogState(false);
   }
 
-  function openDoc() {}
+  function openDoc() {
+    navigate("/documentation");
+  }
 
   function showAlertPopUpWaiting() {
     toast("Sending email...", {
@@ -86,6 +94,7 @@ function App() {
       toast.error("Email was not sent successfully", ALERTPOPUP_PROPERTIES);
     }
   }
+
   async function sendMail(data: CreateMessageDataType) {
     const { fullname, email, message } = data;
     const API = VITE_API_URL;
@@ -103,7 +112,9 @@ function App() {
         messagem: message,
         subject: "SOUDEV - Quiz Game",
       }),
-    }).then((data) => data.json()).catch((e) =>  'error')
+    })
+      .then((data) => data.json())
+      .catch((e) => "error");
 
     if (response.response == "ok") showAlertPopUp("success");
     if (response.response == undefined) showAlertPopUp("error");
@@ -120,60 +131,48 @@ function App() {
         <div>
           <Heading text="SouDEV - Quiz Game" />
 
-          <TXT />
-          <Modal
-            dialogState={dialogState}
-            setDialogStateFalse={closeDialog}
-            title="Anything to tell me?"
-          >
+          <TextSpace
+            text="Bem-vindo à documentação da API do jogo de Quiz! Aqui você
+            encontrará todas as informações necessárias para começar a criar
+            aplicativos incríveis usando nossa API."
+          />
+
+          <TextSpace
+            text="Nossa API de Quiz Game ordena as resposta de forma aleatoria de modo a alterar as opções certas tornando a experiência do usuário mais interessante. Com suporte a mais de sete idiomas e quiz com imagens, você pode oferecer uma experiência multilíngue para seus usuários e alcançar uma audiência global."
+          />
+          <TextSpace text="Então, comece agora a usar nossa API de Quiz Game e crie jogos incríveis que seus usuários vão adorar!" />
+
+          <Modal dialogState={dialogState} setDialogStateFalse={closeDialog} title="Algo para me dizer?">
             <FormProvider {...createSendMailForm}>
               <form onSubmit={handleSubmit(sendMail)}>
                 <Field>
-                  <Label text="Full Name:" labelFor="fullname" />
-                  <Input type="text" placeholder="Your Name" name="fullname" />
+                  <Label text="Nome Completo:" labelFor="fullname" />
+                  <Input type="text" placeholder="Seu Nome" name="fullname" />
                   {errors.fullname && <Span text={errors.fullname.message} />}
                 </Field>
 
                 <Field>
                   <Label text="E-mail:" labelFor="email" />
-                  <Input type="email" placeholder="Your E-mail" name="email" />
+                  <Input type="email" placeholder="Seu E-mail" name="email" />
                   {errors.email && <Span text={errors.email.message} />}
                 </Field>
 
                 <Field>
-                  <Label text="Message:" labelFor="message" />
-                  <Textarea
-                    placeholder="Your Suggestion, Criticism or Contribution"
-                    name="message"
-                  />
+                  <Label text="Mensagem:" labelFor="message" />
+                  <Textarea placeholder="Sua sugestão, crítica ou contribuição" name="message"/>
                   {errors.message && <Span text={errors.message.message} />}
                 </Field>
 
                 <div className="flex flex-row justify-end gap-1 mt-4">
-                  <Button
-                    text="Send Message"
-                    textColor="gray-200"
-                    buttonType="primary"
-                    type="submit"
-                  />
-                  <Button
-                    text="Close"
-                    textColor="gray-200"
-                    buttonType="error"
-                    type="reset"
-                    onClickButton={closeDialog}
-                  />
+                  <Button text="Enviar Mensagem" textColor="gray-200" buttonType="primary" type="submit" />
+                  <Button text="Fechar" textColor="gray-200" buttonType="error" type="reset" onClickButton={closeDialog} />
                 </div>
               </form>
             </FormProvider>
           </Modal>
 
           <div className="flex items-center gap-2">
-            <Button
-              text="Get Started"
-              buttonType="primary"
-              onClickButton={openDoc}
-            />
+            <Button text="Começar" buttonType="primary" onClickButton={openDoc}/>
             <Link text="Feedback" onClickLink={openDialog} />
           </div>
         </div>
@@ -186,4 +185,4 @@ function App() {
   );
 }
 
-export default App;
+export { Home };
