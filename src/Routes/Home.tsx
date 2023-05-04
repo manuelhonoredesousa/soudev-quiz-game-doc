@@ -61,8 +61,6 @@ function Home() {
   const createSendMailForm = useForm<CreateMessageDataType>({ resolver: zodResolver(createMessageSchema) });
   const navigate = useNavigate();
 
-  const { VITE_API_URL } = import.meta.env;
-
   function openDialog() {
     setDialogState(true);
   }
@@ -97,7 +95,7 @@ function Home() {
 
   async function sendMail(data: CreateMessageDataType) {
     const { fullname, email, message } = data;
-    const API = VITE_API_URL;
+    const API = "https://soudev-api.cyclic.app/send-email";
 
     closeDialog();
     showAlertPopUpWaiting();
