@@ -1,4 +1,4 @@
-import "./Home.css";
+// import "./Home.css";
 import "react-toastify/dist/ReactToastify.css";
 
 import { useState } from "react";
@@ -19,7 +19,7 @@ import { Textarea } from "./../Components/Form/Textarea";
 import { Span } from "./../Components/Span";
 
 import rooling from "./../Assets/rolling_200px.svg";
-import sun_img from "./../Assets/sun-iso-color.png";
+import landPage_img from "./../Assets/sun-iso-color.png";
 import { TextSpace } from "./../Components/TextSpace";
 
 const ALERTPOPUP_PROPERTIES = {
@@ -175,7 +175,7 @@ function Home() {
           </div>
         </div>
         <div className="flex items-center">
-          <img src={sun_img} alt="Image of 3D Sun" />
+          <img src={landPage_img} alt="Image of 3D Sun" />
         </div>
       </div>
       <ToastContainer />
