@@ -1,9 +1,12 @@
-import { InputHTMLAttributes } from "react";
+import { useState } from "react";
 import { Button } from "../Components/Button";
 import { Details } from "../Components/Details";
 import { Radio } from "../Components/Form/Radio";
 import { Heading } from "../Components/Heading";
 import { TextSpace } from "../Components/TextSpace";
+import rooling from "./../Assets/rolling_200px.svg";
+import "./Documentation.css";
+import { ToastContainer, toast } from "react-toastify";
 
 const API_INFORMATIONS = {
   url: "https://quiz-game.cyclic.app",
@@ -63,17 +66,91 @@ const API_INFORMATIONS = {
     "Image_quiz",
   ],
 };
+type languageCodeTypes = "pt" | "en" | "es" | "ar" | "fr" | "hi" | "ru" | "zh" | "ko" | "ja";
+export type numberOrString = string | number;
+type questionsOptionsTypes = [ numberOrString, numberOrString, numberOrString, numberOrString];
+interface QuestionEntity {
+  id: number;
+  question: string;
+  options: questionsOptionsTypes;
+  answer: numberOrString;
+}
 
 export function Documentation() {
+  const [isLoadding, setIsLoadding] = useState<boolean>(false);
+  const [answerChoice, setAnswerChoice] = useState<string>();
+  const [languageCode, setLanguageCode] = useState("ar");
+  const [quizGame, setQuizGame] = useState<QuestionEntity>();
+
   function handleRadioChanges(e: React.ChangeEvent<HTMLInputElement>) {
-    const value = e.target.value
-    console.log(value);
-    
+    const selectedRadioOption = e.target.value;
+    setAnswerChoice(selectedRadioOption);
   }
 
-  function selectCurrentOption(data: string) {
-    console.log(data);
+  function handleSelectChange(e: React.ChangeEvent<HTMLSelectElement>) {
+    const selectedLanguageCode = e.target.value;
+    setLanguageCode(selectedLanguageCode);
+  }
+
+  function notify({type, sms}:{type: "error" | "success" | "info", sms: string}) {
+    if (type == "success") {
+      toast.success(sms)
     }
+    if (type == "error") {
+      toast.error(sms,{autoClose:7000})
+    }
+    if (type == "info") {
+      toast.info(sms,{autoClose:2000})
+    }
+  }
+
+  function verifyAnswer() {
+    const isCorrectAnswer = answerChoice == quizGame?.answer;
+
+    if (quizGame?.id == undefined) {
+      notify({type: "info", sms: "Primeiro clica em 'Novo Jogo'"})
+      return
+    }
+    if (answerChoice == undefined) {
+      notify({type: "info", sms: "Selecione uma opção antes"})
+      return
+    }
+    
+    if (isCorrectAnswer) {
+      notify({type: "success", sms: "Resposta Correcta"})
+    } else {
+      notify({type: "success", sms: `Resposta Errada, a opção correcta era : "${quizGame?.answer}"`})
+    }
+    setAnswerChoice(undefined);
+    closeGame();
+  }
+
+  function getNewGame() {
+    // fetch(`${API_INFORMATIONS.url}/${languageCode}/random-question`)
+    // .then(response => response.json())
+    // .then(data => setQuizGame(data.quiz))
+    // .catch(error => notify("Problema na requisição de dados com API, verifique sua conexão ou me manda um Feedback na página inicial", {autoClose: 7000}))
+
+    setIsLoadding(true);
+    setTimeout(() => {
+      setQuizGame({
+        id: 1,
+        question: "Qual é a cor do ceu?",
+        options: ["Verde", "Azul", "Amarero", "Vermelho"],
+        answer: "Azul",
+      });
+      setIsLoadding(false);
+    }, 2500);
+  }
+
+  function closeGame(): void {
+    setQuizGame((prev:any) => { //TODO fix
+      return {
+        ...prev,
+        id: undefined
+      }      
+    })
+  }
 
   return (
     <>
@@ -88,7 +165,8 @@ export function Documentation() {
         Actualmente a API tem suporta a{" "}
         {API_INFORMATIONS.avaliableLanguages.length}, línguas, as quais são:{" "}
         {API_INFORMATIONS.avaliableLanguages.map((language, key) => (
-          <Details.Span key={key}
+          <Details.Span
+            key={key}
             text={`${language.language}(${language.code}), `}
             textColor="Primary 100"
           />
@@ -100,7 +178,6 @@ export function Documentation() {
         ))}
         contudo a API possui 4 endpoints que são:
       </Details.Text>
-      
 
       <Details.Group title="Rota para informações">
         <Details.Text>
@@ -109,7 +186,7 @@ export function Documentation() {
           documentação.
         </Details.Text>
 
-        <Details.Link link="https://quiz-game.cyclic.app" />
+        <Details.Link link={API_INFORMATIONS.url} />
       </Details.Group>
 
       <Details.Group title="Rota para jogo (modo normal)">
@@ -157,7 +234,7 @@ export function Documentation() {
           disponíveis.
         </Details.Text>
 
-        <Details.Link link="https://quiz-game.cyclic.app/pt/Science_and_technology/1" />
+        <Details.Link link={`${API_INFORMATIONS.url}/pt/Science_and_technology/1`} />
       </Details.Group>
 
       <Details.Group title="Rota para obter tópicos de perguntas de modo aleatórias">
@@ -188,7 +265,7 @@ export function Documentation() {
           línguas disponíveis'.
         </Details.Text>
 
-        <Details.Link link="https://quiz-game.cyclic.app/pt/random-topic" />
+        <Details.Link link={`${API_INFORMATIONS.url}/pt/random-topic`} />
       </Details.Group>
 
       <Details.Group title="Rota para obter perguntas aleatórias">
@@ -220,28 +297,45 @@ export function Documentation() {
           línguas disponíveis'.
         </Details.Text>
 
-        <Details.Link link="https://quiz-game.cyclic.app/pt/random-question" />
+        <Details.Link link={`${API_INFORMATIONS.url}/pt/random-question`} />
       </Details.Group>
 
-      <Heading
-        text="Demonstração - Usando rota para perguntas aleatórias"
-        headType="h2"
-      />
+      <Heading text="Demonstração - Usando rota para perguntas aleatórias" headType="h2"/>
 
-      <Button text="Solicitar Pergunta" buttonType="primary" />
-      <Button text="Confirmar" buttonType="primary" />
-      <TextSpace text="Você pode ir alem e fazer toca de perguntas de forma automática após esconlher uma pergunta, solicitar" />
-      <div className="bg-slate-400 flex flex-col">
-        <div>
-          <TextSpace text="* Questão ?" />
-        </div>
-        <div onChange={handleRadioChanges}>
-          <Radio handleRadioClick={()=> selectCurrentOption("-Manuel")} id="option_1" group="options" text="Manuel" />
-          <Radio handleRadioClick={()=> selectCurrentOption("-Bunga")} id="option_2" group="options" text="Bunga" />
-          <Radio handleRadioClick={()=> selectCurrentOption("-Honore")} id="option_3" group="options" text="Honore" />
-          <Radio handleRadioClick={()=> selectCurrentOption("-Sousa")} id="option_4" group="options" text="Sousa" />
+      <Details.Text>
+        Clica em 'Novo Jogo' para solicitar uma questão de forma aleatótia a
+        API.
+      </Details.Text>
+      <Details.Text>
+        Seleciona uma língua{" "}
+        <select onChange={handleSelectChange} className="p-1 rounded-md">
+          {API_INFORMATIONS.avaliableLanguages.map((language, index) => (
+            <option value={language.code} key={index}>
+              {language.language}
+            </option>
+          ))}
+        </select>
+      </Details.Text>
+
+      <div className="bg-_secondary rounded-md p-6  break-words question-area max-w-5xl ">
+        {quizGame?.id == undefined ? (
+          <img hidden={!isLoadding ? true : false} className="my-9 m-auto w-14" src={rooling} alt="Loadding..."/>
+        ) : (
+          <div>
+            <p className="font-bold">{quizGame?.question}</p>
+            <div onChange={handleRadioChanges}>
+              {quizGame?.options.map((option, index) => <Radio key={index} id={`Linha_${index + 1}`} group="options" text={option}/>)}
+            </div>
+          </div>
+        )}
+
+        <div className="flex gap-4">
+          <Button onClickButton={getNewGame} text="Novo Jogo" buttonType="secondary" />
+          <Button onClickButton={verifyAnswer} text="Verificar Resposta" buttonType="secondary" />
+          <Button onClickButton={closeGame} text="Limpar" buttonType="secondary" />
         </div>
       </div>
+      <ToastContainer />
     </>
   );
 }

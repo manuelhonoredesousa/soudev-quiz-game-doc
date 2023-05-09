@@ -22,7 +22,7 @@ import rooling from "./../Assets/rolling_200px.svg";
 import landPage_img from "./../Assets/sun-iso-color.png";
 import { TextSpace } from "./../Components/TextSpace";
 
-const ALERTPOPUP_PROPERTIES = {
+export const ALERTPOPUP_PROPERTIES = {
   autoClose: 5000,
   hideProgressBar: false,
   closeOnClick: true,
