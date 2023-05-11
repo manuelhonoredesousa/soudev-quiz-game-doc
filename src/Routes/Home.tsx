@@ -34,7 +34,7 @@ export const ALERTPOPUP_PROPERTIES = {
 const createMessageSchema = z.object({
   fullname: z
     .string()
-    .nonempty("Name is required")
+    .nonempty("O nome é obrigatório")
     .transform((name) => {
       return name
         .trim()
@@ -44,12 +44,12 @@ const createMessageSchema = z.object({
     }),
   email: z
     .string()
-    .nonempty("Email is required")
-    .email("Invalid format, eg: quizgame@example.com"),
+    .nonempty("O e-mail é obrigatório")
+    .email("Formato inválido, ex: quizgame@example.com"),
   message: z
     .string()
-    .nonempty("Message is required")
-    .min(5, "Must be at least 5 characters"),
+    .nonempty("A mensagem é obrigatória")
+    .min(5, "Deve conter pelo menos 5 caractéres"),
 });
 
 type CreateMessageDataType = z.infer<typeof createMessageSchema>;
@@ -73,7 +73,7 @@ function Home() {
   }
 
   function showAlertPopUpWaiting() {
-    toast("Sending email...", {
+    toast("Enviando email...", {
       autoClose: false,
       hideProgressBar: true,
       closeOnClick: false,
@@ -87,9 +87,9 @@ function Home() {
   function showAlertPopUp(type: EmailResponseType) {
     toast.dismiss();
     if (type == "success") {
-      toast.success("The email has been sent", ALERTPOPUP_PROPERTIES);
+      toast.success("O e-mail foi enviado", ALERTPOPUP_PROPERTIES);
     } else if (type == "error") {
-      toast.error("Email was not sent successfully", ALERTPOPUP_PROPERTIES);
+      toast.error("O e-mail não foi enviado com sucesso", ALERTPOPUP_PROPERTIES);
     }
   }
 
