@@ -5,7 +5,7 @@ import "./index.css";
 
 import { Home } from "./Routes/Home";
 import { Documentation } from "./Routes/Documentation";
-import App from "../others/App";
+
 
 const route = createBrowserRouter([
   {
