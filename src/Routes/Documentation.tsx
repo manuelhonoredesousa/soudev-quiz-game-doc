@@ -66,11 +66,10 @@ const API_INFORMATIONS = {
     "Image_quiz",
   ],
 };
-type languageCodeTypes = "pt" | "en" | "es" | "ar" | "fr" | "hi" | "ru" | "zh" | "ko" | "ja";
 export type numberOrString = string | number;
 type questionsOptionsTypes = [ numberOrString, numberOrString, numberOrString, numberOrString];
 interface QuestionEntity {
-  id: number;
+  id: number | undefined;
   question: string;
   options: questionsOptionsTypes;
   answer: numberOrString;
@@ -105,8 +104,7 @@ export function Documentation() {
   }
 
   function verifyAnswer() {
-    const isCorrectAnswer = answerChoice == quizGame?.answer;
-
+    
     if (quizGame?.id == undefined) {
       notify({type: "info", sms: "Primeiro clica em 'Novo Jogo'"})
       return
@@ -115,41 +113,50 @@ export function Documentation() {
       notify({type: "info", sms: "Selecione uma opção antes"})
       return
     }
-    
+    const isCorrectAnswer = answerChoice === quizGame!.answer;
+
     if (isCorrectAnswer) {
       notify({type: "success", sms: "Resposta Correcta"})
     } else {
-      notify({type: "success", sms: `Resposta Errada, a opção correcta era : "${quizGame?.answer}"`})
+      notify({type: "error", sms: `Resposta Errada, a opção correcta era : "${quizGame?.answer}"`})
     }
     setAnswerChoice(undefined);
     closeGame();
   }
 
   function getNewGame() {
-    // fetch(`${API_INFORMATIONS.url}/${languageCode}/random-question`)
-    // .then(response => response.json())
-    // .then(data => setQuizGame(data.quiz))
-    // .catch(error => notify("Problema na requisição de dados com API, verifique sua conexão ou me manda um Feedback na página inicial", {autoClose: 7000}))
-
+    closeGame()
     setIsLoadding(true);
-    setTimeout(() => {
-      setQuizGame({
-        id: 1,
-        question: "Qual é a cor do ceu?",
-        options: ["Verde", "Azul", "Amarero", "Vermelho"],
-        answer: "Azul",
-      });
-      setIsLoadding(false);
-    }, 2500);
+    
+    fetch(`${API_INFORMATIONS.url}/${languageCode}/random-question`)
+    .then(response => response.json())
+    .then(data => {
+      setQuizGame(data.quiz) 
+      setIsLoadding(false);      
+      if (data.quiz.id == undefined) {
+        notify({type:"error", sms: "Problema na requisição de dados com API."})
+        closeGame()
+      }
+    })
+    .catch(error => {
+      notify({
+      type:"error", 
+      sms: "Problema na requisição de dados com API, verifique sua conexão ou me manda um Feedback na página inicial"
+    })    
+    setIsLoadding(false); 
+    closeGame()
+  })
   }
 
-  function closeGame(): void {
-    setQuizGame((prev:any) => { //TODO fix
+  function closeGame(){
+    
+    setQuizGame((prev:any)=>{ //TODO i don't think how to fix this part yet
       return {
         ...prev,
         id: undefined
-      }      
+      }
     })
+    setAnswerChoice(undefined)
   }
 
   return (
@@ -322,7 +329,7 @@ export function Documentation() {
           <img hidden={!isLoadding ? true : false} className="my-9 m-auto w-14" src={rooling} alt="Loadding..."/>
         ) : (
           <div>
-            <p className="font-bold">{quizGame?.question}</p>
+            {quizGame?.question.slice(0,8) == "https://" ? (<img src={quizGame?.question} alt="question"/>) : (<p className="font-bold">{quizGame?.question}</p>)}
             <div onChange={handleRadioChanges}>
               {quizGame?.options.map((option, index) => <Radio key={index} id={`Linha_${index + 1}`} group="options" text={option}/>)}
             </div>
@@ -332,7 +339,6 @@ export function Documentation() {
         <div className="flex gap-4">
           <Button onClickButton={getNewGame} text="Novo Jogo" buttonType="secondary" />
           <Button onClickButton={verifyAnswer} text="Verificar Resposta" buttonType="secondary" />
-          <Button onClickButton={closeGame} text="Limpar" buttonType="secondary" />
         </div>
       </div>
       <ToastContainer />
