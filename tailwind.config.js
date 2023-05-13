@@ -15,7 +15,10 @@ export default {
           500: "#cd2b31",
           600: "#b8252a"
         },
-        _secondary: "#3b3b3b",
+        _secondary: {
+          100:"#3b3b3b",
+          500:"#121212"
+        },
       },
     },
   },

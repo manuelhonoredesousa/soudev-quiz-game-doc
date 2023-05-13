@@ -315,7 +315,7 @@ export function Documentation() {
       </Details.Text>
       <Details.Text>
         Seleciona uma língua{" "}
-        <select onChange={handleSelectChange} className="p-1 rounded-md">
+        <select onChange={handleSelectChange} className="p-1 rounded-md bg-_secondary-100">
           {API_INFORMATIONS.avaliableLanguages.map((language, index) => (
             <option value={language.code} key={index}>
               {language.language}

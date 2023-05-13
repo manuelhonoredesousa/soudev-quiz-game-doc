@@ -20,6 +20,7 @@ dialog {
   -moz-border-radius: 0.5rem;
   -ms-border-radius: 0.5rem;
   -o-border-radius: 0.5rem;
+  background-color: #121212;
 }
 
 /* .modal-close-button {
